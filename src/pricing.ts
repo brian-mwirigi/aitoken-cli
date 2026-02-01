@@ -3,6 +3,17 @@ import { ProviderPricing } from './types';
 export const pricing: Record<string, ProviderPricing> = {
   openai: {
     models: {
+      // GPT-5 Series (2026)
+      'gpt-5.2': { input: 1.75, output: 14.0 },
+      'gpt-5.2-pro': { input: 21.0, output: 168.0 },
+      'gpt-5-mini': { input: 0.25, output: 2.0 },
+      // GPT-4.1 Series (2026)
+      'gpt-4.1': { input: 3.0, output: 12.0 },
+      'gpt-4.1-mini': { input: 0.80, output: 3.20 },
+      'gpt-4.1-nano': { input: 0.20, output: 0.80 },
+      // o4 Series (2026)
+      'o4-mini': { input: 4.0, output: 16.0 },
+      // Legacy GPT-4 Series (still available)
       'gpt-4': { input: 30.0, output: 60.0 },
       'gpt-4-32k': { input: 60.0, output: 120.0 },
       'gpt-4-turbo': { input: 10.0, output: 30.0 },
@@ -16,6 +27,14 @@ export const pricing: Record<string, ProviderPricing> = {
   },
   anthropic: {
     models: {
+      // Claude 4.5 Series (2026) - Current
+      'claude-sonnet-4-5': { input: 3.0, output: 15.0 },
+      'claude-sonnet-4.5': { input: 3.0, output: 15.0 },
+      'claude-haiku-4-5': { input: 1.0, output: 5.0 },
+      'claude-haiku-4.5': { input: 1.0, output: 5.0 },
+      'claude-opus-4-5': { input: 5.0, output: 25.0 },
+      'claude-opus-4.5': { input: 5.0, output: 25.0 },
+      // Claude 3 Series (Legacy but still available)
       'claude-3-opus': { input: 15.0, output: 75.0 },
       'claude-3-sonnet': { input: 3.0, output: 15.0 },
       'claude-3-haiku': { input: 0.25, output: 1.25 },
