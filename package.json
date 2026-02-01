@@ -1,0 +1,47 @@
+{
+  "name": "token-tracker-cli",
+  "version": "1.0.0",
+  "description": "Track AI API usage and costs across OpenAI, Anthropic, Google, and more",
+  "main": "dist/index.js",
+  "bin": {
+    "token-tracker": "./dist/index.js",
+    "tt": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "ai",
+    "tokens",
+    "openai",
+    "anthropic",
+    "claude",
+    "gpt",
+    "api",
+    "usage",
+    "tracking",
+    "cli"
+  ],
+  "author": "Brian Mwirigi",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "commander": "^11.1.0",
+    "better-sqlite3": "^9.2.2",
+    "cli-table3": "^0.6.3",
+    "date-fns": "^3.0.6",
+    "ora": "^5.4.1"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.8",
+    "@types/node": "^20.10.6",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
