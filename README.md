@@ -1,4 +1,4 @@
-# TokenCost
+# aitoken
 
 > Track your AI API usage and costs across OpenAI, Anthropic, Google, and more.
 
@@ -17,31 +17,31 @@ Never wonder "how much am I spending on AI?" again. Simple, fast, and local-firs
 
 ```bash
 # Install
-npm install -g tokencost
+npm install -g aitoken-cli
 
 # Add usage
-tc add -p openai -m gpt-4o -i 1500 -o 800
+at add -p openai -m gpt-4o -i 1500 -o 800
 
 # View today's usage
-tc today
+at today
 
 # View stats
-tc stats
+at stats
 
 # View last 7 days
-tc stats -d 7
+at stats -d 7
 ```
 
 ## Installation
 
 ```bash
-npm install -g tokencost
+npm install -g aitoken-cli
 ```
 
 Or use without installing:
 
 ```bash
-npx tokencost add -p openai -m gpt-4o -i 1500 -o 800
+npx aitoken-cli add -p openai -m gpt-4o -i 1500 -o 800
 ```
 
 ## Usage
@@ -50,10 +50,10 @@ npx tokencost add -p openai -m gpt-4o -i 1500 -o 800
 
 ```bash
 # Basic usage
-tc add -p openai -m gpt-4o -i 1500 -o 800
+at add -p openai -m gpt-4o -i 1500 -o 800
 
 # With notes
-tc add -p anthropic -m claude-3.5-sonnet -i 2000 -o 1200 -n "Code review session"
+at add -p anthropic -m claude-3.5-sonnet -i 2000 -o 1200 -n "Code review session"
 
 # Options:
 # -p, --provider   Provider (openai, anthropic, google, azure, cohere)
@@ -67,71 +67,71 @@ tc add -p anthropic -m claude-3.5-sonnet -i 2000 -o 1200 -n "Code review session
 
 ```bash
 # List recent usage (default: last 20)
-tc list
+at list
 
 # Filter by provider
-tc list -p openai
+at list -p openai
 
 # Limit results
-tc list -l 50
+at list -l 50
 
 # Export as JSON
-tc list --json > usage.json
+at list --json > usage.json
 ```
 
 ### View Stats
 
 ```bash
 # Overall stats
-tc stats
+at stats
 
 # Last 7 days
-tc stats -d 7
+at stats -d 7
 
 # Specific provider
-tc stats -p anthropic
+at stats -p anthropic
 
 # Export as JSON
-tc stats --json
+at stats --json
 ```
 
 ### Today's Usage
 
 ```bash
 # Quick view of today
-tc today
+at today
 
 # As JSON
-tc today --json
+at today --json
 ```
 
 ### Supported Models
 
 ```bash
 # List all models and pricing
-tc models
+at models
 
 # Filter by provider
-tc models -p openai
+at models -p openai
 ```
 
 ### Clear Data
 
 ```bash
 # Clear all data (requires confirmation)
-tc clear --yes
+at clear --yes
 
 # Clear specific provider
-tc clear -p openai --yes
+at clear -p openai --yes
 
 # Clear before date
-tc clear --before 2026-01-01 --yes
+at clear --before 2026-01-01 --yes
 ```
 
 ## Example Output
 
 ```bash
-$ tc stats
+$ at stats
 
  Overall Stats
 
@@ -162,7 +162,7 @@ Add after each coding session:
 
 ```bash
 # After using Cursor/Claude Code
-tc add -p anthropic -m claude-3.5-sonnet -i 15000 -o 8000 -n "Built token tracker"
+at add -p anthropic -m claude-3.5-sonnet -i 15000 -o 8000 -n "Built token tracker"
 ```
 
 ### Track API Usage
@@ -173,7 +173,7 @@ Log your API calls automatically:
 import { exec } from 'child_process';
 
 async function logUsage(response: any) {
-  exec(`tc add -p openai -m ${response.model} -i ${response.usage.prompt_tokens} -o ${response.usage.completion_tokens}`);
+  exec(`at add -p openai -m ${response.model} -i ${response.usage.prompt_tokens} -o ${response.usage.completion_tokens}`);
 }
 ```
 
@@ -183,7 +183,7 @@ Check if you're over budget:
 
 ```bash
 # Get today's spending as JSON
-COST=$(tc today --json | jq '.[] | .cost' | jq -s add)
+COST=$(at today --json | jq '.[] | .cost' | jq -s add)
 
 if (( $(echo "$COST > 10" | bc -l) )); then
   echo "⚠️ Over daily budget!"
@@ -236,7 +236,7 @@ npm run build
 
 # Test locally
 npm link
-tc stats
+at stats
 ```
 
 ## License

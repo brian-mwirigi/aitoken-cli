@@ -1,11 +1,11 @@
 {
-  "name": "tokencost",
+  "name": "aitoken-cli",
   "version": "1.0.0",
   "description": "Track AI API usage and costs across OpenAI, Anthropic, Google, and more",
   "main": "dist/index.js",
   "bin": {
-    "tokencost": "./dist/index.js",
-    "tc": "./dist/index.js"
+    "aitoken": "./dist/index.js",
+    "at": "./dist/index.js"
   },
   "scripts": {
     "build": "tsc",
