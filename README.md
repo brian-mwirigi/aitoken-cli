@@ -11,7 +11,7 @@
   <p><em>Local-first • Privacy-focused • Multi-provider • Fast</em></p>
   
   <p>
-    <a href="https://www.brianmunene.me/blog/2-track-ai-api-costs">📖 Read the full story: How I cut AI costs by 59%</a>
+    <a href="https://www.brianmunene.me/docs/aitoken-cli-docs"> PLease read the documentation</a>
   </p>
 </div>
 
