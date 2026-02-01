@@ -13,13 +13,13 @@
 
 ---
 
-## 💸 The Problem
+##  The Problem
 
 You're spending $200+/month on GPT-4, Claude, and other AI APIs.
 
 **But you have no idea where it's going.**
 
-## ✨ The Solution
+##  The Solution
 
 Track every API call locally. See exactly what you're spending.
 
@@ -49,7 +49,7 @@ at stats
 npm install -g aitoken-cli
 ```
 
-## 🚀 Usage
+##  Usage
 
 ### Add Usage
 
