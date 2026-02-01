@@ -1,8 +1,38 @@
-# aitoken
+<div align="center">
+  <h1>aitoken-cli</h1>
+  <p><strong>Track every dollar you spend on AI APIs</strong></p>
+  
+  <p>
+    <a href="https://www.npmjs.com/package/aitoken-cli"><img src="https://img.shields.io/npm/v/aitoken-cli?color=brightgreen" alt="npm version"></a>
+    <a href="https://www.npmjs.com/package/aitoken-cli"><img src="https://img.shields.io/npm/dm/aitoken-cli" alt="npm downloads"></a>
+    <a href="https://github.com/brian-mwirigi/aitoken-cli/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/aitoken-cli" alt="license"></a>
+  </p>
 
-> Track your AI API usage and costs across OpenAI, Anthropic, Google, and more.
+  <p><em>Local-first • Privacy-focused • Multi-provider • Fast</em></p>
+</div>
 
-Never wonder "how much am I spending on AI?" again. Simple, fast, and local-first.
+---
+
+## 💸 The Problem
+
+You're spending $200+/month on GPT-4, Claude, and other AI APIs.
+
+**But you have no idea where it's going.**
+
+## ✨ The Solution
+
+Track every API call locally. See exactly what you're spending.
+
+```bash
+# Track usage
+at add -p openai -m gpt-4o -i 1500 -o 800
+
+# View stats
+at stats
+# Total: $34.56 (245,890 tokens)
+```
+
+> **Demo:** _[Add GIF here showing cost tracking in action]_
 
 ## Features
 
@@ -13,38 +43,13 @@ Never wonder "how much am I spending on AI?" again. Simple, fast, and local-firs
 - **Fast & Lightweight** - CLI tool, no GUI overhead
 - **JSON Export** - Pipe data to other tools
 
-## Quick Start
-
-```bash
-# Install
-npm install -g aitoken-cli
-
-# Add usage
-at add -p openai -m gpt-4o -i 1500 -o 800
-
-# View today's usage
-at today
-
-# View stats
-at stats
-
-# View last 7 days
-at stats -d 7
-```
-
 ## Installation
 
 ```bash
 npm install -g aitoken-cli
 ```
 
-Or use without installing:
-
-```bash
-npx aitoken-cli add -p openai -m gpt-4o -i 1500 -o 800
-```
-
-## Usage
+## 🚀 Usage
 
 ### Add Usage
 
