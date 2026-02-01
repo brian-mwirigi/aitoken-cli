@@ -9,6 +9,10 @@
   </p>
 
   <p><em>Local-first • Privacy-focused • Multi-provider • Fast</em></p>
+  
+  <p>
+    <a href="https://www.brianmunene.me/blog/2-track-ai-api-costs">📖 Read the full story: How I cut AI costs by 59%</a>
+  </p>
 </div>
 
 ---
@@ -170,17 +174,36 @@ Add after each coding session:
 at add -p anthropic -m claude-3.5-sonnet -i 15000 -o 8000 -n "Built token tracker"
 ```
 
-### Track API Usage
+### Track API Usage in Code
 
-Log your API calls automatically:
+**Integrate once, track forever:**
 
 ```typescript
 import { exec } from 'child_process';
+import OpenAI from 'openai';
 
-async function logUsage(response: any) {
-  exec(`at add -p openai -m ${response.model} -i ${response.usage.prompt_tokens} -o ${response.usage.completion_tokens}`);
+const openai = new OpenAI();
+
+// Create wrapper function (one-time setup)
+async function callGPT(messages: any[]) {
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o",
+    messages
+  });
+  
+  // Automatic tracking
+  const { prompt_tokens, completion_tokens } = response.usage;
+  exec(`at add -p openai -m gpt-4o -i ${prompt_tokens} -o ${completion_tokens}`);
+  
+  return response;
 }
+
+// Now every call tracks automatically
+await callGPT([{role: "user", content: "Hello"}]);  // tracked ✓
+await callGPT([{role: "user", content: "Goodbye"}]); // tracked ✓
 ```
+
+**Works with Anthropic, Google, and all supported providers.**
 
 ### Budget Alerts
 
