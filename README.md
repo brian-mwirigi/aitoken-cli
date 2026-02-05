@@ -234,32 +234,63 @@ const response = await openai.chat.completions.create({
 
 ## Programmatic API
 
+```typescript
+import { addUsage, getUsage, getStats, calculateCost } from 'aitoken-cli';
+
+// Calculate cost for a request
+const cost = calculateCost('openai', 'gpt-4o', 1500, 800);
+console.log(`Cost: $${cost.toFixed(4)}`); // $0.0195
+
+// Add a usage entry
+addUsage({
+  provider: 'openai',
+  model: 'gpt-4o',
+  promptTokens: 1500,
+  completionTokens: 800,
+  totalTokens: 2300,
+  cost,
+  timestamp: new Date().toISOString(),
+  notes: 'My API call',
+});
+
+// Get usage entries
+const usage = getUsage({ provider: 'openai', limit: 10 });
+
+// Get statistics
+const stats = getStats({ provider: 'openai' });
+console.log(`Total: $${stats.totalCost.toFixed(2)} (${stats.totalRequests} requests)`);
+```
+
 ## Data Storage
 
 All data is stored locally in `~/.token-tracker/usage.db` (SQLite).
 
 No data is sent anywhere. 100% local.
 
-## Supported Providers & Models
+## Supported Providers & Models (42 Models)
 
-### OpenAI
-- GPT-4, GPT-4 Turbo, GPT-4o, GPT-4o Mini
-- GPT-3.5 Turbo variants
-- O1 Preview, O1 Mini
+### OpenAI (16 models)
+- GPT-5.2, GPT-5.2 Pro, GPT-5 Mini
+- GPT-4.1, GPT-4.1 Mini, GPT-4.1 Nano
+- o4-mini
+- GPT-4, GPT-4-32K, GPT-4 Turbo, GPT-4o, GPT-4o Mini
+- GPT-3.5 Turbo, GPT-3.5 Turbo 16K
+- o1-preview, o1-mini
 
-### Anthropic (Claude)
-- Claude 3 Opus, Sonnet, Haiku
-- Claude 3.5 Sonnet, Haiku
-- Claude 2.x, Claude Instant
+### Anthropic (14 models)
+- Claude Sonnet 4.5, Claude Haiku 4.5, Claude Opus 4.5
+- Claude 3.5 Sonnet, Claude 3.5 Haiku
+- Claude 3 Opus, Claude 3 Sonnet, Claude 3 Haiku
+- Claude 2.1, Claude 2.0, Claude Instant
 
-### Google
-- Gemini 1.5 Pro, Flash
-- Gemini 1.0 Pro, Pro Vision
+### Google (5 models)
+- Gemini 1.5 Pro, Gemini 1.5 Flash
+- Gemini 1.0 Pro, Gemini Pro, Gemini Pro Vision
 
-### Azure OpenAI
-- GPT-4, GPT-3.5 Turbo
+### Azure OpenAI (3 models)
+- GPT-4, GPT-4-32K, GPT-3.5 Turbo
 
-### Cohere
+### Cohere (4 models)
 - Command, Command Light, Command R, Command R+
 
 ## Development

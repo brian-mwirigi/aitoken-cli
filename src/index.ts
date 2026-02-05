@@ -14,7 +14,7 @@ const program = new Command();
 program
   .name('token-tracker')
   .description('Track AI API usage and costs across multiple providers')
-  .version('1.0.0');
+  .version('1.1.1');
 
 // Add command
 program
@@ -220,7 +220,10 @@ program
     console.log();
   });
 
-program.parse();
+// Only parse CLI args when run directly (not when imported as a library)
+if (require.main === module) {
+  program.parse();
+}
 
 // Export programmatic API for use in code
 // This allows users to import tracking functions instead of just using the CLI

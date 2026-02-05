@@ -1,6 +1,6 @@
 {
   "name": "aitoken-cli",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Track AI API usage and costs across OpenAI, Anthropic, Google, and more",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

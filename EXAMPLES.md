@@ -370,7 +370,7 @@ at models
 ### Programmatic Access
 
 ```typescript
-import { getStats, getUsage } from 'aitoken-cli';
+import { getStats, getUsage, calculateCost, addUsage } from 'aitoken-cli';
 
 async function viewStats() {
   // Get overall statistics
