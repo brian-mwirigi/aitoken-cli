@@ -227,27 +227,16 @@ const response = await openai.chat.completions.create({
   model: 'gpt-4o',
   messages: [{ role: 'user', content: 'Hello!' }]
 });
-// Automatically tracked! ✅
+// Automatically tracked!
 ```
 
 **See [EXAMPLES.md](./EXAMPLES.md) for 12 complete examples including Express.js, Next.js, and chatbot integrations.**
 
-### Budget Alerts
-
-Check if you're over budget:
-
-```bash
-# Get today's spending as JSON
-COST=$(at today --json | jq '.[] | .cost' | jq -s add)
-
-if (( $(echo "$COST > 10" | bc -l) )); then
-  echo "⚠️ Over daily budget!"
-fi
-```
+## Programmatic API
 
 ## Data Storage
 
-All data is stored locally in `~/.tokencost/usage.db` (SQLite).
+All data is stored locally in `~/.token-tracker/usage.db` (SQLite).
 
 No data is sent anywhere. 100% local.
 
@@ -277,128 +266,7 @@ No data is sent anywhere. 100% local.
 
 ```bash
 # Clone repo
-git clone https://github.com/brian-mwirigi/tokencost.git
-cd tokencost
-
-# Install dependencies
-npm install
-
-# Run in dev mode
-npm run dev -- add -p openai -m gpt-4o -i 1000 -o 500
-
-# Build
-npm run build
-
-# Test locally
-npm link
-at stats
-```
-
-## License
-
-MIT
-
-## Contributing
-
-Contributions welcome! Please open an issue or PR.
-
-##  Inspired By
-
-Built by [Brian Mwirigi](https://github.com/brian-mwirigi) inspired by [CodexBar](https://github.com/steipete/CodexBar).
-
----
-### Method 1: Wrapper Functions (Easiest)
-
-```typescript
-import { trackedGPT, trackedClaude, trackedGemini } from 'aitoken-cli/wrappers';
-import OpenAI from 'openai';
-import Anthropic from '@anthropic-ai/sdk';
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
-// Use trackedGPT() instead of openai.chat.completions.create()
-const response = await trackedGPT(openai, {
-  model: 'gpt-4o',
-  messages: [{ role: 'user', content: 'Hello!' }]
-});
-// Automatically tracked!
-
-const claudeResponse = await trackedClaude(anthropic, {
-  model: 'claude-sonnet-4.5',
-  max_tokens: 1024,
-  messages: [{ role: 'user', content: 'Explain TypeScript' }]
-});
-// Automatically tracked!
-```
-
-### Method 2: Middleware Pattern (Zero Code Changes)
-
-```typescript
-import { createTrackedClient } from 'aitoken-cli/middleware';
-import OpenAI from 'openai';
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-// Wrap your client once
-const trackedOpenAI = createTrackedClient(openai, {
-  provider: 'openai',
-  model: 'gpt-4o'
-});
-
-// Use it exactly like normal - tracking happens automatically
-const response = await trackedOpenAI.chat.completions.create({
-  model: 'gpt-4o',
-  messages: [{ role: 'user', content: 'Hello!' }]
-});
-// Automatically tracked with zero code changes!
-```
-
-### Method 3: SDK Extensions (Drop-in Replacement)
-
-```typescript
-import { TrackedOpenAI, TrackedAnthropic } from 'aitoken-cli/extensions';
-
-// Just change the import - everything else stays the same
-const openai = new TrackedOpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
-
-const response = await openai.chat.completions.create({
-  model: 'gpt-4o',
-  messages: [{ role: 'user', content: 'Hello!' }]
-});
-// Automatically tracked!
-```
-
-**See [EXAMPLES.md](./EXAMPLES.md) for 12 complete examples including Express.js, Next.js, and chatbot integrations.**
-
-## Programmatic API
-
-Access tracking data programmatically in your code:
-
-```typescript
-import { getStats, getUsage, addUsage, calculateCost } from 'aitoken-cli';
-
-// Get statistics
-const stats = getStats({ provider: 'openai' });
-console.log('Total cost:', stats.totalCost);
-console.log('Total requests:', stats.totalRequests);
-
-// Get usage history
-const recentUsage = getUsage({ limit: 10 });
-console.log('Recent usage:', recentUsage);
-
-// Add usage manually
-addUsage({
-  provider: 'openai',
-  model: 'gpt-4o',
-  promptTokens: 1000,
-  completionTokens: 500,
-  totalTokens: 1500,
-  cost: calculateCost('openai', 'gpt-4o', 1000, 500),
-  timestamp: new Date().toISOString()
-});aitoken-cli.git
+git clone https://github.com/brian-mwirigi/aitoken-cli.git
 cd aitoken-cli
 
 # Install dependencies
