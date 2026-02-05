@@ -1,11 +1,34 @@
 {
   "name": "aitoken-cli",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Track AI API usage and costs across OpenAI, Anthropic, Google, and more",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "bin": {
     "aitoken": "./dist/index.js",
     "at": "./dist/index.js"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./wrappers": {
+      "import": "./dist/wrappers.js",
+      "require": "./dist/wrappers.js",
+      "types": "./dist/wrappers.d.ts"
+    },
+    "./middleware": {
+      "import": "./dist/middleware.js",
+      "require": "./dist/middleware.js",
+      "types": "./dist/middleware.d.ts"
+    },
+    "./extensions": {
+      "import": "./dist/extensions.js",
+      "require": "./dist/extensions.js",
+      "types": "./dist/extensions.d.ts"
+    }
   },
   "scripts": {
     "build": "tsc",
@@ -23,7 +46,11 @@
     "api",
     "usage",
     "tracking",
-    "cli"
+    "cli",
+    "automatic-tracking",
+    "cost-tracking",
+    "wrapper",
+    "middleware"
   ],
   "author": "Brian Mwirigi",
   "license": "MIT",
@@ -40,6 +67,22 @@
     "@types/node": "^20.10.6",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3"
+  },
+  "peerDependencies": {
+    "openai": ">=4.0.0",
+    "@anthropic-ai/sdk": ">=0.20.0",
+    "@google/generative-ai": ">=0.12.0"
+  },
+  "peerDependenciesMeta": {
+    "openai": {
+      "optional": true
+    },
+    "@anthropic-ai/sdk": {
+      "optional": true
+    },
+    "@google/generative-ai": {
+      "optional": true
+    }
   },
   "engines": {
     "node": ">=16.0.0"

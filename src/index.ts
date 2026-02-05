@@ -221,3 +221,32 @@ program
   });
 
 program.parse();
+
+// Export programmatic API for use in code
+// This allows users to import tracking functions instead of just using the CLI
+export { addUsage, getUsage, getStats, clearUsage } from './db';
+export { calculateCost, pricing } from './pricing';
+export { Provider, Usage, Stats, ProviderPricing } from './types';
+
+// Automatic Tracking - Wrapper Functions
+export {
+  trackedGPT,
+  trackedClaude,
+  trackedGemini,
+  trackedAI,
+} from './wrappers';
+
+// Automatic Tracking - Middleware Pattern
+export {
+  createTrackedClient,
+  withTracking,
+  BatchTracker,
+} from './middleware';
+
+// Automatic Tracking - SDK Extensions
+export {
+  TrackedOpenAI,
+  TrackedAnthropic,
+  TrackedGoogleAI,
+  createTrackedClient as createTrackedSDK,
+} from './extensions';
