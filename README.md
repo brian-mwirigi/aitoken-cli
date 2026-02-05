@@ -205,6 +205,103 @@ await callGPT([{role: "user", content: "Goodbye"}]); // tracked ✓
 
 **Works with Anthropic, Google, and all supported providers.**
 
+## Automatic Tracking Methods
+
+### Method 1: Wrapper Functions (Recommended)
+
+Create utility wrappers for complete automation:
+
+```typescript
+// utils/trackedAI.ts
+import { exec } from 'child_process';
+import OpenAI from 'openai';
+import Anthropic from '@anthropic-ai/sdk';
+
+const openai = new OpenAI();
+const anthropic = new Anthropic();
+
+// Tracked OpenAI wrapper
+export async function trackedGPT(messages: any[], model = "gpt-4o") {
+  const response = await openai.chat.completions.create({ model, messages });
+  
+  const { prompt_tokens, completion_tokens } = response.usage;
+  exec(`at add -p openai -m ${model} -i ${prompt_tokens} -o ${completion_tokens}`);
+  
+  return response;
+}
+
+// Tracked Anthropic wrapper
+export async function trackedClaude(messages: any[], model = "claude-3-5-sonnet-20241022") {
+  const response = await anthropic.messages.create({
+    model,
+    messages,
+    max_tokens: 4096
+  });
+  
+  const { input_tokens, output_tokens } = response.usage;
+  exec(`at add -p anthropic -m ${model} -i ${input_tokens} -o ${output_tokens}`);
+  
+  return response;
+}
+```
+
+Then use these everywhere:
+
+```typescript
+// Before (manual tracking)
+const response = await openai.chat.completions.create({...});
+
+// After (automatic tracking)
+const response = await trackedGPT([{role: "user", content: "Hello"}]);
+```
+
+### Method 2: Middleware Pattern
+
+Intercept ALL API calls automatically:
+
+```typescript
+// middleware/aiTracker.ts
+import { exec } from 'child_process';
+
+export function createTrackedClient(client: any, provider: string) {
+  return new Proxy(client, {
+    get(target, prop) {
+      const original = target[prop];
+      
+      if (typeof original === 'function') {
+        return async function(...args: any[]) {
+          const result = await original.apply(target, args);
+          
+          if (result?.usage) {
+            const model = args[0]?.model || 'unknown';
+            const inputTokens = result.usage.prompt_tokens || result.usage.input_tokens;
+            const outputTokens = result.usage.completion_tokens || result.usage.output_tokens;
+            
+            exec(`at add -p ${provider} -m ${model} -i ${inputTokens} -o ${outputTokens}`);
+          }
+          
+          return result;
+        };
+      }
+      
+      return original;
+    }
+  });
+}
+
+// Usage - all calls auto-track
+const openai = createTrackedClient(new OpenAI(), 'openai');
+```
+
+### Method 3: Post-Session Manual Tracking
+
+For AI coding tools (Cursor, Claude Code):
+
+```bash
+# After a coding session, manually log usage
+at add -p anthropic -m claude-3.5-sonnet -i 15000 -o 8000 -n "2hr coding session"
+```
+
 ### Budget Alerts
 
 Check if you're over budget:
