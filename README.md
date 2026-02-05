@@ -371,7 +371,7 @@ const response = await openai.chat.completions.create({
 // Automatically tracked! ✅
 ```
 
-**See [EXAMPLES.ts](./EXAMPLES.ts) for 12 complete examples including Express.js, Next.js, and chatbot integrations.**
+**See [EXAMPLES.md](./EXAMPLES.md) for 12 complete examples including Express.js, Next.js, and chatbot integrations.**
 
 ### Budget Alerts
 

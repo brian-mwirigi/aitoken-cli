@@ -1,26 +1,38 @@
-/**
- * EXAMPLES: Using aitoken-cli Automatic Tracking
- * 
- * This file demonstrates all three methods of automatic tracking:
- * 1. Wrapper Functions
- * 2. Middleware Pattern
- * 3. SDK Extensions
- */
+# Usage Examples for aitoken-cli
 
-// ==================================================
-// METHOD 1: WRAPPER FUNCTIONS (Recommended for most)
-// ==================================================
+This file demonstrates all three methods of automatic tracking with **aitoken-cli**.
 
-import { trackedGPT, trackedClaude, trackedGemini } from 'aitoken-cli/wrappers';
+## Prerequisites
+
+Install peer dependencies based on which providers you want to use:
+
+```bash
+# For OpenAI
+npm install openai
+
+# For Anthropic Claude
+npm install @anthropic-ai/sdk
+
+# For Google Gemini
+npm install @google/generative-ai
+
+# For web frameworks (Express.js example)
+npm install express
+```
+
+---
+
+## METHOD 1: WRAPPER FUNCTIONS (Recommended)
+
+### Example 1: OpenAI with trackedGPT()
+
+```typescript
+import { trackedGPT } from 'aitoken-cli/wrappers';
 import OpenAI from 'openai';
-import Anthropic from '@anthropic-ai/sdk';
 
-// Setup
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
 
-// Example 1: OpenAI wrapper
-async function example1_OpenAI() {
+async function askGPT() {
   const response = await trackedGPT(openai, {
     model: 'gpt-4o',
     messages: [
@@ -32,9 +44,17 @@ async function example1_OpenAI() {
   console.log(response.choices[0].message.content);
   // ✅ Automatically tracked to ~/.token-tracker/usage.db
 }
+```
 
-// Example 2: Anthropic wrapper
-async function example2_Claude() {
+### Example 2: Anthropic Claude with trackedClaude()
+
+```typescript
+import { trackedClaude } from 'aitoken-cli/wrappers';
+import Anthropic from '@anthropic-ai/sdk';
+
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
+
+async function askClaude() {
   const response = await trackedClaude(anthropic, {
     model: 'claude-sonnet-4.5',
     max_tokens: 1024,
@@ -46,12 +66,17 @@ async function example2_Claude() {
   console.log(response.content[0].text);
   // ✅ Automatically tracked
 }
+```
 
-// Example 3: Google Gemini wrapper
-async function example3_Gemini() {
-  const { GoogleGenerativeAI } = require('@google/generative-ai');
-  const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
+### Example 3: Google Gemini with trackedGemini()
 
+```typescript
+import { trackedGemini } from 'aitoken-cli/wrappers';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
+
+async function askGemini() {
   const response = await trackedGemini(genAI, {
     model: 'gemini-1.5-pro',
     prompt: 'What are the benefits of using TypeScript?'
@@ -60,15 +85,19 @@ async function example3_Gemini() {
   console.log(response.response.text());
   // ✅ Automatically tracked
 }
+```
 
-// ==================================================
-// METHOD 2: MIDDLEWARE PATTERN (Best for large codebases)
-// ==================================================
+---
 
+## METHOD 2: MIDDLEWARE PATTERN (Best for Large Codebases)
+
+### Example 4: Proxy That Tracks Everything
+
+```typescript
 import { createTrackedClient } from 'aitoken-cli/middleware';
+import OpenAI from 'openai';
 
-// Example 4: Proxy that tracks everything
-async function example4_Middleware() {
+async function useMiddleware() {
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
 
   // Wrap the entire client
@@ -78,7 +107,7 @@ async function example4_Middleware() {
     notes: 'Production API'
   });
 
-  // Use it exactly like normal OpenAI - tracking is automatic
+  // Use it exactly like normal OpenAI - tracking is automatic!
   const response = await trackedOpenAI.chat.completions.create({
     model: 'gpt-4o',
     messages: [{ role: 'user', content: 'Hello!' }]
@@ -87,11 +116,15 @@ async function example4_Middleware() {
   console.log(response.choices[0].message.content);
   // ✅ Automatically tracked - no changes to existing code!
 }
+```
 
-// Example 5: Higher-order function wrapper
+### Example 5: Higher-Order Function Wrapper
+
+```typescript
 import { withTracking } from 'aitoken-cli/middleware';
+import OpenAI from 'openai';
 
-async function example5_HigherOrder() {
+async function useHigherOrder() {
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
 
   // Wrap specific functions
@@ -112,11 +145,15 @@ async function example5_HigherOrder() {
   console.log(response.choices[0].message.content);
   // ✅ Automatically tracked
 }
+```
 
-// Example 6: Batch tracking for parallel requests
+### Example 6: Batch Tracking for Parallel Requests
+
+```typescript
 import { BatchTracker } from 'aitoken-cli/middleware';
+import OpenAI from 'openai';
 
-async function example6_BatchTracking() {
+async function batchTracking() {
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
   const tracker = new BatchTracker('openai', 'gpt-4o', 'Parallel requests');
 
@@ -139,16 +176,19 @@ async function example6_BatchTracking() {
   responses.forEach(r => console.log(r.choices[0].message.content));
   // ✅ All three requests automatically tracked
 }
+```
 
-// ==================================================
-// METHOD 3: SDK EXTENSIONS (Drop-in replacements)
-// ==================================================
+---
 
-import { TrackedOpenAI, TrackedAnthropic, TrackedGoogleAI } from 'aitoken-cli/extensions';
+## METHOD 3: SDK EXTENSIONS (Drop-in Replacements)
 
-// Example 7: TrackedOpenAI (drop-in replacement)
-async function example7_TrackedSDK() {
-  // Just change the import - everything else stays the same
+### Example 7: TrackedOpenAI (Drop-in Replacement)
+
+```typescript
+import { TrackedOpenAI } from 'aitoken-cli/extensions';
+
+async function useTrackedSDK() {
+  // Just change the import - everything else stays the same!
   const openai = new TrackedOpenAI({
     apiKey: process.env.OPENAI_API_KEY!,
     notes: 'Using TrackedOpenAI'
@@ -162,9 +202,14 @@ async function example7_TrackedSDK() {
   console.log(response.choices[0].message.content);
   // ✅ Automatically tracked - zero code changes!
 }
+```
 
-// Example 8: TrackedAnthropic
-async function example8_TrackedClaude() {
+### Example 8: TrackedAnthropic
+
+```typescript
+import { TrackedAnthropic } from 'aitoken-cli/extensions';
+
+async function useTrackedClaude() {
   const anthropic = new TrackedAnthropic({
     apiKey: process.env.ANTHROPIC_API_KEY!
   });
@@ -178,9 +223,14 @@ async function example8_TrackedClaude() {
   console.log(response.content[0].text);
   // ✅ Automatically tracked
 }
+```
 
-// Example 9: TrackedGoogleAI
-async function example9_TrackedGemini() {
+### Example 9: TrackedGoogleAI
+
+```typescript
+import { TrackedGoogleAI } from 'aitoken-cli/extensions';
+
+async function useTrackedGemini() {
   const genAI = new TrackedGoogleAI(process.env.GOOGLE_API_KEY!);
   const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
 
@@ -188,19 +238,26 @@ async function example9_TrackedGemini() {
   console.log(response.response.text());
   // ✅ Automatically tracked
 }
+```
 
-// ==================================================
-// REAL-WORLD EXAMPLES
-// ==================================================
+---
 
-// Example 10: Express.js middleware
+## REAL-WORLD EXAMPLES
+
+### Example 10: Express.js Middleware
+
+```typescript
 import express from 'express';
+import { createTrackedClient } from 'aitoken-cli/middleware';
+import OpenAI from 'openai';
 
 const app = express();
 const trackedOpenAI = createTrackedClient(
   new OpenAI({ apiKey: process.env.OPENAI_API_KEY! }),
   { provider: 'openai', model: 'gpt-4o', notes: 'API endpoint' }
 );
+
+app.use(express.json());
 
 app.post('/api/chat', async (req, res) => {
   const { message } = req.body;
@@ -214,10 +271,21 @@ app.post('/api/chat', async (req, res) => {
   // ✅ Every request automatically tracked
 });
 
-// Example 11: Next.js API route
+app.listen(3000, () => console.log('Server running on port 3000'));
+```
+
+### Example 11: Next.js API Route
+
+```typescript
+// app/api/chat/route.ts
+import { TrackedOpenAI } from 'aitoken-cli/extensions';
+
 export async function POST(request: Request) {
   const { message } = await request.json();
-  const openai = new TrackedOpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+  
+  const openai = new TrackedOpenAI({ 
+    apiKey: process.env.OPENAI_API_KEY! 
+  });
 
   const response = await openai.chat.completions.create({
     model: 'gpt-4o',
@@ -229,11 +297,16 @@ export async function POST(request: Request) {
   });
   // ✅ Automatically tracked
 }
+```
 
-// Example 12: Chatbot with multiple providers
+### Example 12: Chatbot with Multiple Providers
+
+```typescript
+import { TrackedOpenAI, TrackedAnthropic } from 'aitoken-cli/extensions';
+
 class AIAssistant {
-  private openai: any;
-  private claude: any;
+  private openai: TrackedOpenAI;
+  private claude: TrackedAnthropic;
 
   constructor() {
     // Use SDK extensions for automatic tracking
@@ -266,27 +339,60 @@ class AIAssistant {
   }
 }
 
-// ==================================================
-// VIEWING YOUR TRACKED DATA
-// ==================================================
+// Usage
+const assistant = new AIAssistant();
+await assistant.ask('What is TypeScript?', 'openai');
+await assistant.ask('Explain promises', 'claude');
+```
 
-// After running any of the above examples, view your usage:
+---
 
-// CLI commands:
-// $ at stats                    # View all stats
-// $ at today                    # Today's usage
-// $ at list -p openai -l 10    # Last 10 OpenAI requests
-// $ at models                   # See all pricing
+## VIEWING YOUR TRACKED DATA
 
-// Programmatic access:
+After running any of the above examples, view your usage:
+
+### CLI Commands
+
+```bash
+# View all stats
+at stats
+
+# Today's usage
+at today
+
+# Last 10 OpenAI requests
+at list -p openai -l 10
+
+# See all pricing
+at models
+```
+
+### Programmatic Access
+
+```typescript
 import { getStats, getUsage } from 'aitoken-cli';
 
 async function viewStats() {
+  // Get overall statistics
   const stats = getStats({ provider: 'openai' });
   console.log('Total cost:', stats.totalCost);
   console.log('Total requests:', stats.totalRequests);
   console.log('Total tokens:', stats.totalTokens);
 
+  // Get recent usage entries
   const recentUsage = getUsage({ limit: 10 });
   console.log('Recent usage:', recentUsage);
 }
+```
+
+---
+
+## METHOD COMPARISON
+
+| Method | Best For | Setup Effort | Automation | Code Changes |
+|--------|----------|--------------|------------|--------------|
+| **Wrapper Functions** | Production apps | Medium | 95% | Minimal |
+| **Middleware Pattern** | Large codebases | Low | 100% | None |
+| **SDK Extensions** | Drop-in replacement | None | 100% | Import only |
+
+**Recommendation:** Start with **Wrapper Functions** (Method 1) for the best balance of simplicity and automation. Use **Middleware** or **SDK Extensions** if you want zero code changes.
