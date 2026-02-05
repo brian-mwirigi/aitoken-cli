@@ -11,19 +11,19 @@
   <p><em>Local-first • Privacy-focused • Multi-provider • Fast</em></p>
   
   <p>
-    <a href="https://www.brianmunene.me/docs/aitoken-cli-docs"> PLease read the documentation</a>
+    <a href="https://www.brianmunene.me/docs/aitoken-cli-docs">Read the documentation</a>
   </p>
 </div>
 
 ---
 
-##  The Problem
+## The Problem
 
 You're spending $200+/month on GPT-4, Claude, and other AI APIs.
 
 **But you have no idea where it's going.**
 
-##  The Solution
+## The Solution
 
 Track every API call locally. See exactly what you're spending.
 
@@ -36,18 +36,16 @@ at stats
 # Total: $34.56 (245,890 tokens)
 ```
 
-> **Demo:** _[Add GIF here showing cost tracking in action]_
+## Features
 
-## ✨ Features
-
-- **🎯 Automatic Tracking** - Built-in wrappers, middleware, and SDK extensions (NEW in v1.1.0)
-- **🌍 Multi-Provider Support** - OpenAI, Anthropic, Google, Azure, Cohere
-- **💰 Automatic Cost Calculation** - Up-to-date pricing for all major models
-- **📊 Beautiful Stats** - See usage by provider, model, and time period
-- **🔒 Local Storage** - All data stored locally in SQLite (privacy-first)
-- **⚡ Fast & Lightweight** - CLI tool, no GUI overhead
-- **📤 JSON Export** - Pipe data to other tools
-- **📝 Programmatic API** - Use in your code without CLI calls
+- **Automatic Tracking** - Built-in wrappers, middleware, and SDK extensions (NEW in v1.1.0)
+- **Multi-Provider Support** - OpenAI, Anthropic, Google, Azure, Cohere
+- **Automatic Cost Calculation** - Up-to-date pricing for all major models
+- **Beautiful Stats** - See usage by provider, model, and time period
+- **Local Storage** - All data stored locally in SQLite (privacy-first)
+- **Fast & Lightweight** - CLI tool, no GUI overhead
+- **JSON Export** - Pipe data to other tools
+- **Programmatic API** - Use in your code without CLI calls
 
 ## Installation
 
@@ -55,7 +53,7 @@ at stats
 npm install -g aitoken-cli
 ```
 
-##  Usage
+## CLI Usage
 
 ### Add Usage
 
@@ -144,7 +142,7 @@ at clear --before 2026-01-01 --yes
 ```bash
 $ at stats
 
- Overall Stats
+Overall Stats
 
 ┌─────────────────┬──────────┐
 │ Metric          │ Value    │
@@ -154,7 +152,7 @@ $ at stats
 │ Total Cost      │ $24.5670 │
 └─────────────────┴──────────┘
 
- By Provider
+By Provider
 
 ┌──────────┬──────────┬─────────┬──────────┬────────────┐
 │ Provider │ Requests │ Tokens  │ Cost     │ % of Total │
@@ -165,153 +163,14 @@ $ at stats
 └──────────┴──────────┴─────────┴──────────┴────────────┘
 ```
 
-## Use Cases
+## Automatic Tracking (v1.1.0+)
 
-### Integration with AI Coding
-
-Add after each coding session:
-
-```bash
-# After using Cursor/Claude Code
-at add -p anthropic -m claude-3.5-sonnet -i 15000 -o 8000 -n "Built token tracker"
-```
-
-### Track API Usage in Code
-
-**Integrate once, track forever:**
-
-```typescript
-import { exec } from 'child_process';
-import OpenAI from 'openai';
-
-const openai = new OpenAI();
-
-// Create wrapper function (one-time setup)
-async function callGPT(messages: any[]) {
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o",
-    messages
-  });
-  
-  // Automatic tracking
-  const { prompt_tokens, completion_tokens } = response.usage;
-  exec(`at add -p openai -m gpt-4o -i ${prompt_tokens} -o ${completion_tokens}`);
-  
-  return response;
-}
-
-// Now every call tracks automatically
-await callGPT([{role: "user", content: "Hello"}]);  // tracked ✓
-await callGPT([{role: "user", content: "Goodbye"}]); // tracked ✓
-```
-
-**Works with Anthropic, Google, and all supported providers.**
-
-## Automatic Tracking Methods
-
-### Method 1: Wrapper Functions (Recommended)
-
-Create utility wrappers for complete automation:
-
-```typescript
-// utils/trackedAI.ts
-import { exec } from 'child_process';
-import OpenAI from 'openai';
-import Anthropic from '@anthropic-ai/sdk';
-
-const openai = new OpenAI();
-const anthropic = new Anthropic();
-
-// Tracked OpenAI wrapper
-export async function trackedGPT(messages: any[], model = "gpt-4o") {
-  const response = await openai.chat.completions.create({ model, messages });
-  
-  const { prompt_tokens, completion_tokens } = response.usage;
-  exec(`at add -p openai -m ${model} -i ${prompt_tokens} -o ${completion_tokens}`);
-  
-  return response;
-}
-
-// Tracked Anthropic wrapper
-export async function trackedClaude(messages: any[], model = "claude-3-5-sonnet-20241022") {
-  const response = await anthropic.messages.create({
-    model,
-    messages,
-    max_tokens: 4096
-  });
-  
-  const { input_tokens, output_tokens } = response.usage;
-  exec(`at add -p anthropic -m ${model} -i ${input_tokens} -o ${output_tokens}`);
-  
-  return response;
-}
-```
-
-Then use these everywhere:
-
-```typescript
-// Before (manual tracking)
-const response = await openai.chat.completions.create({...});
-
-// After (automatic tracking)
-const response = await trackedGPT([{role: "user", content: "Hello"}]);
-```
-
-### Method 2: Middleware Pattern
-
-Intercept ALL API calls automatically:
-
-```typescript
-// middleware/aiTracker.ts
-import { exec } from 'child_process';
-
-export function createTrackedClient(client: any, provider: string) {
-  return new Proxy(client, {
-    get(target, prop) {
-      const original = target[prop];
-      
-      if (typeof original === 'function') {
-        return async function(...args: any[]) {
-          const result = await original.apply(target, args);
-          
-          if (result?.usage) {
-            const model = args[0]?.model || 'unknown';
-            const inputTokens = result.usage.prompt_tokens || result.usage.input_tokens;
-            const outputTokens = result.usage.completion_tokens || result.usage.output_tokens;
-            
-            exec(`at add -p ${provider} -m ${model} -i ${inputTokens} -o ${outputTokens}`);
-          }
-          
-          return result;
-        };
-      }
-      
-      return original;
-    }
-  });
-}
-
-// Usage - all calls auto-track
-const openai = createTrackedClient(new OpenAI(), 'openai');
-```
-
-### Method 3: Post-Session Manual Tracking
-
-For AI coding tools (Cursor, Claude Code):
-
-```bash
-# After a coding session, manually log usage
-at add -p anthropic -m claude-3.5-sonnet -i 15000 -o 8000 -n "2hr coding session"
-```
-
-## 🚀 NEW: Built-in Automatic Tracking (v1.1.0+)
-
-The package now includes **ready-to-use automatic tracking functions** - no need for `exec()` or CLI calls!
+The package includes **built-in automatic tracking functions** - no need for exec() or CLI calls in your code!
 
 ### Import and Use Directly
 
 ```typescript
-// ✨ Method 1: Wrapper Functions (Easiest)
+//  Method 1: Wrapper Functions (Easiest)
 import { trackedGPT, trackedClaude, trackedGemini } from 'aitoken-cli/wrappers';
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
@@ -323,19 +182,19 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const response = await trackedGPT(openai, {
   model: 'gpt-4o',
   messages: [{ role: 'user', content: 'Hello!' }]
-  // Automatically tracked! ✅
+  // Automatically tracked! 
 });
 
 const claudeResponse = await trackedClaude(anthropic, {
   model: 'claude-sonnet-4.5',
   max_tokens: 1024,
   messages: [{ role: 'user', content: 'Explain TypeScript' }]
-  // Automatically tracked! ✅
+  // Automatically tracked! 
 });
 ```
 
 ```typescript
-// ✨ Method 2: Middleware Pattern (Zero Code Changes)
+//  Method 2: Middleware Pattern (Zero Code Changes)
 import { createTrackedClient } from 'aitoken-cli/middleware';
 import OpenAI from 'openai';
 
@@ -352,11 +211,11 @@ const response = await trackedOpenAI.chat.completions.create({
   model: 'gpt-4o',
   messages: [{ role: 'user', content: 'Hello!' }]
 });
-// Automatically tracked with zero code changes! ✅
+// Automatically tracked with zero code changes! 
 ```
 
 ```typescript
-// ✨ Method 3: SDK Extensions (Drop-in Replacement)
+//  Method 3: SDK Extensions (Drop-in Replacement)
 import { TrackedOpenAI, TrackedAnthropic } from 'aitoken-cli/extensions';
 
 // Just change the import - everything else stays the same!
@@ -448,3 +307,122 @@ Contributions welcome! Please open an issue or PR.
 Built by [Brian Mwirigi](https://github.com/brian-mwirigi) inspired by [CodexBar](https://github.com/steipete/CodexBar).
 
 ---
+### Method 1: Wrapper Functions (Easiest)
+
+```typescript
+import { trackedGPT, trackedClaude, trackedGemini } from 'aitoken-cli/wrappers';
+import OpenAI from 'openai';
+import Anthropic from '@anthropic-ai/sdk';
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+// Use trackedGPT() instead of openai.chat.completions.create()
+const response = await trackedGPT(openai, {
+  model: 'gpt-4o',
+  messages: [{ role: 'user', content: 'Hello!' }]
+});
+// Automatically tracked!
+
+const claudeResponse = await trackedClaude(anthropic, {
+  model: 'claude-sonnet-4.5',
+  max_tokens: 1024,
+  messages: [{ role: 'user', content: 'Explain TypeScript' }]
+});
+// Automatically tracked!
+```
+
+### Method 2: Middleware Pattern (Zero Code Changes)
+
+```typescript
+import { createTrackedClient } from 'aitoken-cli/middleware';
+import OpenAI from 'openai';
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+// Wrap your client once
+const trackedOpenAI = createTrackedClient(openai, {
+  provider: 'openai',
+  model: 'gpt-4o'
+});
+
+// Use it exactly like normal - tracking happens automatically
+const response = await trackedOpenAI.chat.completions.create({
+  model: 'gpt-4o',
+  messages: [{ role: 'user', content: 'Hello!' }]
+});
+// Automatically tracked with zero code changes!
+```
+
+### Method 3: SDK Extensions (Drop-in Replacement)
+
+```typescript
+import { TrackedOpenAI, TrackedAnthropic } from 'aitoken-cli/extensions';
+
+// Just change the import - everything else stays the same
+const openai = new TrackedOpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
+
+const response = await openai.chat.completions.create({
+  model: 'gpt-4o',
+  messages: [{ role: 'user', content: 'Hello!' }]
+});
+// Automatically tracked!
+```
+
+**See [EXAMPLES.md](./EXAMPLES.md) for 12 complete examples including Express.js, Next.js, and chatbot integrations.**
+
+## Programmatic API
+
+Access tracking data programmatically in your code:
+
+```typescript
+import { getStats, getUsage, addUsage, calculateCost } from 'aitoken-cli';
+
+// Get statistics
+const stats = getStats({ provider: 'openai' });
+console.log('Total cost:', stats.totalCost);
+console.log('Total requests:', stats.totalRequests);
+
+// Get usage history
+const recentUsage = getUsage({ limit: 10 });
+console.log('Recent usage:', recentUsage);
+
+// Add usage manually
+addUsage({
+  provider: 'openai',
+  model: 'gpt-4o',
+  promptTokens: 1000,
+  completionTokens: 500,
+  totalTokens: 1500,
+  cost: calculateCost('openai', 'gpt-4o', 1000, 500),
+  timestamp: new Date().toISOString()
+});aitoken-cli.git
+cd aitoken-cli
+
+# Install dependencies
+npm install
+
+# Run in dev mode
+npm run dev -- add -p openai -m gpt-4o -i 1000 -o 500
+
+# Build
+npm run build
+
+# Test locally
+npm link
+at stats
+```
+
+## Contributing
+
+Contributions welcome! Please open an issue or PR.
+
+## License
+
+MIT
+
+## Author
+
+Built by [Brian Mwirigi](https://github.com/brian-mwirigi)
