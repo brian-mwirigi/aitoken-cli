@@ -73,44 +73,48 @@ export function createTrackedClient<T extends object>(
  * Extract usage data from API response and track it
  */
 function trackResponse(response: any, config: ClientConfig): void {
-  let promptTokens = 0;
-  let completionTokens = 0;
-  let model = config.model;
+  try {
+    let promptTokens = 0;
+    let completionTokens = 0;
+    let model = config.model;
 
-  // OpenAI format
-  if (response.usage?.prompt_tokens) {
-    promptTokens = response.usage.prompt_tokens;
-    completionTokens = response.usage.completion_tokens;
-    model = response.model || config.model;
-  }
-  // Anthropic format
-  else if (response.usage?.input_tokens) {
-    promptTokens = response.usage.input_tokens;
-    completionTokens = response.usage.output_tokens;
-    model = response.model || config.model;
-  }
-  // Google format
-  else if (response.response?.usageMetadata) {
-    promptTokens = response.response.usageMetadata.promptTokenCount || 0;
-    completionTokens = response.response.usageMetadata.candidatesTokenCount || 0;
-  }
-  // Unknown format - don't track
-  else {
-    return;
-  }
+    // OpenAI format
+    if (response.usage?.prompt_tokens) {
+      promptTokens = response.usage.prompt_tokens;
+      completionTokens = response.usage.completion_tokens;
+      model = response.model || config.model;
+    }
+    // Anthropic format
+    else if (response.usage?.input_tokens) {
+      promptTokens = response.usage.input_tokens;
+      completionTokens = response.usage.output_tokens;
+      model = response.model || config.model;
+    }
+    // Google format
+    else if (response.response?.usageMetadata) {
+      promptTokens = response.response.usageMetadata.promptTokenCount || 0;
+      completionTokens = response.response.usageMetadata.candidatesTokenCount || 0;
+    }
+    // Unknown format - don't track
+    else {
+      return;
+    }
 
-  const cost = calculateCost(config.provider, model, promptTokens, completionTokens);
+    const cost = calculateCost(config.provider, model, promptTokens, completionTokens);
 
-  addUsage({
-    provider: config.provider,
-    model,
-    promptTokens,
-    completionTokens,
-    totalTokens: promptTokens + completionTokens,
-    cost,
-    timestamp: new Date().toISOString(),
-    notes: config.notes,
-  });
+    addUsage({
+      provider: config.provider,
+      model,
+      promptTokens,
+      completionTokens,
+      totalTokens: promptTokens + completionTokens,
+      cost,
+      timestamp: new Date().toISOString(),
+      notes: config.notes,
+    });
+  } catch (e) {
+    console.warn('[aitoken-cli] Failed to track usage:', (e as Error).message);
+  }
 }
 
 /**

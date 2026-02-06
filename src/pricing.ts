@@ -79,6 +79,9 @@ export function calculateCost(
 ): number {
   const providerPricing = pricing[provider.toLowerCase()];
   if (!providerPricing) {
+    if (promptTokens > 0 || completionTokens > 0) {
+      console.warn(`[aitoken-cli] Unknown provider "${provider}" - cost recorded as $0.00`);
+    }
     return 0;
   }
 
@@ -91,6 +94,9 @@ export function calculateCost(
     if (matchedModel) {
       const p = providerPricing.models[matchedModel];
       return (promptTokens / 1_000_000) * p.input + (completionTokens / 1_000_000) * p.output;
+    }
+    if (promptTokens > 0 || completionTokens > 0) {
+      console.warn(`[aitoken-cli] Unknown model "${model}" for provider "${provider}" - cost recorded as $0.00`);
     }
     return 0;
   }

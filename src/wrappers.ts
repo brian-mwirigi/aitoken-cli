@@ -8,6 +8,88 @@ import { calculateCost } from './pricing';
 import { Provider } from './types';
 
 /**
+ * Wraps an OpenAI streaming response to track usage from the final chunk.
+ * OpenAI includes usage data in the last chunk when stream_options.include_usage is true.
+ */
+async function* trackOpenAIStream(
+  stream: any,
+  model: string,
+  notes?: string
+): AsyncGenerator<any> {
+  let lastUsage: any = null;
+
+  for await (const chunk of stream) {
+    if (chunk.usage) {
+      lastUsage = chunk.usage;
+    }
+    yield chunk;
+  }
+
+  if (lastUsage) {
+    try {
+      const promptTokens = lastUsage.prompt_tokens || 0;
+      const completionTokens = lastUsage.completion_tokens || 0;
+      const cost = calculateCost('openai', model, promptTokens, completionTokens);
+
+      addUsage({
+        provider: 'openai',
+        model,
+        promptTokens,
+        completionTokens,
+        totalTokens: promptTokens + completionTokens,
+        cost,
+        timestamp: new Date().toISOString(),
+        notes,
+      });
+    } catch (e) {
+      console.warn('[aitoken-cli] Failed to track streaming usage:', (e as Error).message);
+    }
+  }
+}
+
+/**
+ * Wraps an Anthropic streaming response to track usage from stream events.
+ * Anthropic sends input_tokens in message_start and output_tokens in message_delta.
+ */
+async function* trackAnthropicStream(
+  stream: any,
+  model: string,
+  notes?: string
+): AsyncGenerator<any> {
+  let inputTokens = 0;
+  let outputTokens = 0;
+
+  for await (const event of stream) {
+    if (event.type === 'message_start' && event.message?.usage) {
+      inputTokens = event.message.usage.input_tokens || 0;
+    }
+    if (event.type === 'message_delta' && event.usage) {
+      outputTokens = event.usage.output_tokens || 0;
+    }
+    yield event;
+  }
+
+  if (inputTokens > 0 || outputTokens > 0) {
+    try {
+      const cost = calculateCost('anthropic', model, inputTokens, outputTokens);
+
+      addUsage({
+        provider: 'anthropic',
+        model,
+        promptTokens: inputTokens,
+        completionTokens: outputTokens,
+        totalTokens: inputTokens + outputTokens,
+        cost,
+        timestamp: new Date().toISOString(),
+        notes,
+      });
+    } catch (e) {
+      console.warn('[aitoken-cli] Failed to track streaming usage:', (e as Error).message);
+    }
+  }
+}
+
+/**
  * Wrapper for OpenAI Chat Completions API
  * Automatically tracks tokens for every GPT call
  * 
@@ -26,26 +108,41 @@ export async function trackedGPT(
   params: {
     model: string;
     messages: any[];
+    stream?: boolean;
+    stream_options?: any;
     [key: string]: any;
   },
   notes?: string
 ): Promise<any> {
+  // Handle streaming requests
+  if (params.stream) {
+    const streamParams = {
+      ...params,
+      stream_options: { ...params.stream_options, include_usage: true },
+    };
+    const stream = await openai.chat.completions.create(streamParams);
+    return trackOpenAIStream(stream, params.model, notes);
+  }
+
   const response = await openai.chat.completions.create(params);
 
-  const { prompt_tokens, completion_tokens, total_tokens } = response.usage;
+  try {
+    const { prompt_tokens, completion_tokens, total_tokens } = response.usage;
+    const cost = calculateCost('openai', params.model, prompt_tokens, completion_tokens);
 
-  const cost = calculateCost('openai', params.model, prompt_tokens, completion_tokens);
-
-  addUsage({
-    provider: 'openai',
-    model: params.model,
-    promptTokens: prompt_tokens,
-    completionTokens: completion_tokens,
-    totalTokens: total_tokens,
-    cost,
-    timestamp: new Date().toISOString(),
-    notes,
-  });
+    addUsage({
+      provider: 'openai',
+      model: params.model,
+      promptTokens: prompt_tokens,
+      completionTokens: completion_tokens,
+      totalTokens: total_tokens,
+      cost,
+      timestamp: new Date().toISOString(),
+      notes,
+    });
+  } catch (e) {
+    console.warn('[aitoken-cli] Failed to track usage:', (e as Error).message);
+  }
 
   return response;
 }
@@ -71,26 +168,36 @@ export async function trackedClaude(
     model: string;
     max_tokens: number;
     messages: any[];
+    stream?: boolean;
     [key: string]: any;
   },
   notes?: string
 ): Promise<any> {
+  // Handle streaming requests
+  if (params.stream) {
+    const stream = await anthropic.messages.create(params);
+    return trackAnthropicStream(stream, params.model, notes);
+  }
+
   const response = await anthropic.messages.create(params);
 
-  const { input_tokens, output_tokens } = response.usage;
+  try {
+    const { input_tokens, output_tokens } = response.usage;
+    const cost = calculateCost('anthropic', params.model, input_tokens, output_tokens);
 
-  const cost = calculateCost('anthropic', params.model, input_tokens, output_tokens);
-
-  addUsage({
-    provider: 'anthropic',
-    model: params.model,
-    promptTokens: input_tokens,
-    completionTokens: output_tokens,
-    totalTokens: input_tokens + output_tokens,
-    cost,
-    timestamp: new Date().toISOString(),
-    notes,
-  });
+    addUsage({
+      provider: 'anthropic',
+      model: params.model,
+      promptTokens: input_tokens,
+      completionTokens: output_tokens,
+      totalTokens: input_tokens + output_tokens,
+      cost,
+      timestamp: new Date().toISOString(),
+      notes,
+    });
+  } catch (e) {
+    console.warn('[aitoken-cli] Failed to track usage:', (e as Error).message);
+  }
 
   return response;
 }
@@ -126,18 +233,22 @@ export async function trackedGemini(
   const promptTokens = usageMetadata?.promptTokenCount || 0;
   const completionTokens = usageMetadata?.candidatesTokenCount || 0;
 
-  const cost = calculateCost('google', params.model, promptTokens, completionTokens);
+  try {
+    const cost = calculateCost('google', params.model, promptTokens, completionTokens);
 
-  addUsage({
-    provider: 'google',
-    model: params.model,
-    promptTokens,
-    completionTokens,
-    totalTokens: promptTokens + completionTokens,
-    cost,
-    timestamp: new Date().toISOString(),
-    notes,
-  });
+    addUsage({
+      provider: 'google',
+      model: params.model,
+      promptTokens,
+      completionTokens,
+      totalTokens: promptTokens + completionTokens,
+      cost,
+      timestamp: new Date().toISOString(),
+      notes,
+    });
+  } catch (e) {
+    console.warn('[aitoken-cli] Failed to track usage:', (e as Error).message);
+  }
 
   return response;
 }
@@ -165,19 +276,23 @@ export async function trackedAI<T>(
 ): Promise<T> {
   const response = await apiCall();
 
-  const { promptTokens, completionTokens } = extractTokens(response);
-  const cost = calculateCost(provider, model, promptTokens, completionTokens);
+  try {
+    const { promptTokens, completionTokens } = extractTokens(response);
+    const cost = calculateCost(provider, model, promptTokens, completionTokens);
 
-  addUsage({
-    provider,
-    model,
-    promptTokens,
-    completionTokens,
-    totalTokens: promptTokens + completionTokens,
-    cost,
-    timestamp: new Date().toISOString(),
-    notes,
-  });
+    addUsage({
+      provider,
+      model,
+      promptTokens,
+      completionTokens,
+      totalTokens: promptTokens + completionTokens,
+      cost,
+      timestamp: new Date().toISOString(),
+      notes,
+    });
+  } catch (e) {
+    console.warn('[aitoken-cli] Failed to track usage:', (e as Error).message);
+  }
 
   return response;
 }

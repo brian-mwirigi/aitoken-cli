@@ -14,7 +14,7 @@ const program = new Command();
 program
   .name('token-tracker')
   .description('Track AI API usage and costs across multiple providers')
-  .version('1.1.1');
+  .version('1.2.0');
 
 // Add command
 program
